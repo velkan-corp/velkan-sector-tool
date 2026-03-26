@@ -1,0 +1,629 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1rem; background: #f5f5f3; color: #1a1a1a; }
+.page { padding: 1.25rem; max-width: 960px; margin: 0 auto; }
+
+/* ── Header ── */
+.tool-header { margin-bottom: 1.25rem; }
+.tool-title { font-size: 1.15rem; font-weight: 700; color: #1a1a1a; letter-spacing: -0.01em; }
+.tool-sub { font-size: 0.8rem; color: #6b6b66; margin-top: 0.2rem; }
+
+/* ── Filter bar ── */
+.filter-bar { background: #fff; border: 1px solid #e0e0db; border-radius: 0.75rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.filter-section { margin-bottom: 0.75rem; }
+.filter-section:last-child { margin-bottom: 0; }
+.filter-label { font-size: 0.7rem; font-weight: 600; color: #6b6b66; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+.pill-row { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.filter-pill { padding: 0.35rem 0.7rem; border-radius: 2rem; border: 1.5px solid #d0d0cc; background: #fff; font-size: 0.78rem; font-family: inherit; cursor: pointer; transition: all 0.15s; color: #1a1a1a; white-space: nowrap; }
+.filter-pill:hover { border-color: #1D9E75; background: #f8faf6; }
+.filter-pill.active { border-color: #1D9E75; background: #1D9E75; color: #fff; font-weight: 500; }
+.filter-brief { margin-top: 0.5rem; font-size: 0.78rem; color: #6b6b66; line-height: 1.5; padding: 0.5rem 0.7rem; background: #f8faf6; border-left: 2px solid #1D9E75; border-radius: 0 0.25rem 0.25rem 0; }
+.filter-brief strong { color: #1a1a1a; }
+
+/* ── Advanced toggle ── */
+.adv-toggle { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border: none; background: none; font-size: 0.78rem; color: #6b6b66; font-family: inherit; padding: 0.35rem 0; }
+.adv-toggle:hover { color: #1D9E75; }
+.adv-toggle .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+.adv-toggle .arrow.open { transform: rotate(90deg); }
+.adv-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.adv-panel.open { max-height: 600px; }
+.weight-row { display: grid; grid-template-columns: 1fr auto 4rem auto; gap: 0.4rem; align-items: center; margin-bottom: 0.5rem; }
+.weight-label { font-size: 0.8rem; color: #1a1a1a; }
+.weight-val { font-size: 0.8rem; font-weight: 500; color: #1a1a1a; min-width: 1.5rem; text-align: center; }
+.weight-pct { font-size: 0.75rem; color: #6b6b66; min-width: 2rem; text-align: right; }
+input[type=range] { width: 100%; accent-color: #1D9E75; }
+
+/* ── Dashboard ── */
+.dashboard { background: #fff; border: 1px solid #e0e0db; border-radius: 0.75rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.dash-winner { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+.dash-rank { font-size: 1.8rem; font-weight: 700; color: #1D9E75; }
+.dash-name { font-size: 1.05rem; font-weight: 600; color: #1a1a1a; }
+.dash-sub { font-size: 0.78rem; color: #6b6b66; }
+.dash-score { font-size: 1.4rem; font-weight: 700; color: #1D9E75; margin-left: auto; }
+.dash-bars { display: flex; flex-direction: column; gap: 0.3rem; }
+.dash-bar-row { display: grid; grid-template-columns: 10rem 1fr 2rem; align-items: center; gap: 0.5rem; }
+.dash-bar-label { font-size: 0.75rem; color: #6b6b66; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-bar-wrap { flex: 1; background: #eeeee9; border-radius: 0.2rem; height: 0.5rem; overflow: hidden; position: relative; }
+.dash-bar { height: 100%; border-radius: 0.2rem; transition: width 0.3s; }
+.dash-bar-score { font-size: 0.75rem; font-weight: 500; color: #1a1a1a; min-width: 2rem; }
+
+/* ── Section titles ── */
+.section { margin-bottom: 1.25rem; }
+.section-title { font-size: 0.75rem; font-weight: 600; color: #6b6b66; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.6rem; }
+
+/* ── Ranking cards (expandable) ── */
+.rank-card { background: #fff; border: 1px solid #e0e0db; border-radius: 0.75rem; margin-bottom: 0.5rem; overflow: hidden; transition: box-shadow 0.15s; }
+.rank-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.rank-card.winner { border: 2px solid #1D9E75; }
+.rank-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem; cursor: pointer; user-select: none; }
+.rank-badge { font-size: 0.85rem; font-weight: 700; color: #6b6b66; min-width: 1.75rem; }
+.rank-card.winner .rank-badge { color: #1D9E75; }
+.sector-name { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; }
+.sector-sub { font-size: 0.75rem; color: #6b6b66; }
+.score-num { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin-left: auto; }
+.rank-card.winner .score-num { color: #1D9E75; }
+.rank-pills { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-left: 0.5rem; }
+.expand-arrow { font-size: 0.7rem; color: #6b6b66; transition: transform 0.2s; margin-left: 0.5rem; }
+.expand-arrow.open { transform: rotate(90deg); }
+.rank-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.rank-body.open { max-height: 2000px; }
+.rank-content { padding: 0 1rem 1rem 1rem; border-top: 1px solid #eeeee9; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; }
+.detail-section-title { font-size: 0.7rem; font-weight: 600; color: #6b6b66; text-transform: uppercase; letter-spacing: 0.04em; margin: 0.85rem 0 0.4rem 0; }
+.mini-card { background: #f5f5f3; border-radius: 0.5rem; padding: 0.55rem 0.7rem; }
+.mini-label { font-size: 0.7rem; color: #6b6b66; margin-bottom: 0.15rem; }
+.mini-val { font-size: 0.8rem; font-weight: 500; color: #1a1a1a; line-height: 1.4; }
+
+/* ── Score matrix row inside card ── */
+.matrix-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+.matrix-item { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; min-width: 3.5rem; }
+.matrix-dim { font-size: 0.6rem; color: #6b6b66; text-align: center; }
+.matrix-score-bar { width: 2.5rem; height: 0.35rem; background: #eeeee9; border-radius: 0.15rem; overflow: hidden; }
+.matrix-score-fill { height: 100%; border-radius: 0.15rem; }
+
+/* ── Pills ── */
+.pill { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 1.25rem; font-weight: 500; }
+.pill-g { background: #C0DD97; color: #27500A; }
+.pill-a { background: #FAC775; color: #633806; }
+.pill-r { background: #F5C4B3; color: #712B13; }
+.pill-b { background: #B5D4F4; color: #0C447C; }
+
+/* ── Insight / risk boxes ── */
+.insight-box { background: #f5f5f3; border-left: 2px solid #1D9E75; padding: 0.55rem 0.75rem; margin-bottom: 0.4rem; font-size: 0.8rem; color: #1a1a1a; line-height: 1.5; border-radius: 0 0.25rem 0.25rem 0; }
+.risk-box { background: #f5f5f3; border-left: 2px solid #E24B4A; padding: 0.55rem 0.75rem; margin-bottom: 0.4rem; font-size: 0.8rem; color: #1a1a1a; line-height: 1.5; border-radius: 0 0.25rem 0.25rem 0; }
+
+/* ── Adjacency ── */
+.adj-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.adj-node { display: inline-flex; align-items: center; justify-content: center; border-radius: 0.5rem; padding: 0.4rem 0.65rem; font-size: 0.78rem; font-weight: 500; cursor: default; }
+.adj-node.core { background: #1D9E75; color: #fff; }
+.adj-node.t1 { background: #fff; border: 1.5px solid #1D9E75; color: #1a1a1a; }
+.adj-node.t2 { background: #fff; border: 1.5px solid #378ADD; color: #1a1a1a; }
+.adj-node.t3 { background: #fff; border: 1.5px solid #888780; color: #6b6b66; }
+.adj-arrow { color: #6b6b66; font-size: 0.85rem; }
+.adj-friction { display: inline-flex; align-items: center; font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: 0.75rem; font-weight: 500; }
+.adj-friction.low { background: #C0DD97; color: #27500A; }
+.adj-friction.med { background: #FAC775; color: #633806; }
+.adj-friction.high { background: #F5C4B3; color: #712B13; }
+.adj-detail { font-size: 0.78rem; color: #6b6b66; line-height: 1.5; margin-top: 0.25rem; }
+.adj-timeline { font-size: 0.68rem; font-weight: 500; color: #6b6b66; background: #eeeee9; padding: 0.15rem 0.5rem; border-radius: 0.75rem; }
+.adj-card { background: #fff; border: 1px solid #e0e0db; border-radius: 0.75rem; padding: 0.85rem 1rem; margin-bottom: 0.5rem; }
+
+/* ── Shortlist ── */
+.shortlist-card { background: #fff; border: 1px solid #e0e0db; border-radius: 0.75rem; padding: 1rem 1.25rem; margin-bottom: 0.5rem; }
+.shortlist-card.winner { border: 2px solid #1D9E75; }
+.rec-num { font-size: 1.3rem; font-weight: 700; color: #1a1a1a; }
+.shortlist-card.winner .rec-num { color: #1D9E75; }
+
+/* ── Tooltips ── */
+.tip { position: relative; cursor: default; }
+.tip::before { content: attr(data-tip); position: absolute; bottom: calc(100% + 0.35rem); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.65rem; font-weight: 500; color: #fff; background: #1a1a1a; padding: 0.2rem 0.45rem; border-radius: 0.25rem; opacity: 0; pointer-events: none; transition: opacity 0.12s; z-index: 10; }
+.tip::after { content: ''; position: absolute; bottom: calc(100% + 0.1rem); left: 50%; transform: translateX(-50%); border: 0.25rem solid transparent; border-top-color: #1a1a1a; opacity: 0; pointer-events: none; transition: opacity 0.12s; z-index: 10; }
+.tip:hover::before, .tip:hover::after { opacity: 1; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .page { padding: 0.75rem; }
+  .filter-bar { padding: 0.75rem 0.85rem; }
+  .dashboard { padding: 0.75rem 0.85rem; }
+  .rank-header { padding: 0.65rem 0.75rem; }
+  .rank-content { padding: 0 0.75rem 0.75rem 0.75rem; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .dash-bar-row { grid-template-columns: 7rem 1fr 2rem; }
+  .dash-bar-label { font-size: 0.68rem; }
+  .rank-pills { display: none; }
+  .adj-row { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .adj-node { font-size: 0.7rem; padding: 0.3rem 0.5rem; }
+  .matrix-item { min-width: 3rem; }
+  .matrix-dim { font-size: 0.55rem; }
+}
+
+@media (max-width: 420px) {
+  .page { padding: 0.5rem; }
+  .filter-pill { font-size: 0.7rem; padding: 0.3rem 0.55rem; }
+  .dash-winner { gap: 0.5rem; }
+  .dash-rank { font-size: 1.4rem; }
+  .dash-score { font-size: 1.1rem; }
+  .mini-card { padding: 0.45rem 0.55rem; }
+  .mini-val { font-size: 0.75rem; }
+}
+</style>
+
+<div class="page">
+
+<!-- Zone 1: Header + Filter Bar -->
+<div class="tool-header">
+  <div class="tool-title">Velkan Corp · Sector Strategy Tool</div>
+  <div class="tool-sub">Select niche × channel to reshape scores. Expand cards for deep-dive data.</div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-section">
+    <div class="filter-label">Tech niche</div>
+    <div class="pill-row" id="niche-pills"></div>
+  </div>
+  <div class="filter-section">
+    <div class="filter-label">GTM channel</div>
+    <div class="pill-row" id="channel-pills"></div>
+  </div>
+  <div id="filter-brief"></div>
+  <div style="margin-top:0.5rem;border-top:1px solid #eeeee9;padding-top:0.5rem;">
+    <button class="adv-toggle" id="adv-toggle-btn">
+      <span class="arrow" id="adv-arrow">▶</span> Adjust scoring weights
+    </button>
+    <div class="adv-panel" id="adv-panel">
+      <div style="padding-top:0.5rem;" id="weight-controls"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:6px;border-top:1px solid #eeeee9;">
+        <span style="font-size:0.75rem;color:#6b6b66;">Total weight</span>
+        <span id="total-weight" style="font-size:0.8rem;font-weight:600;color:#1a1a1a;">100%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Zone 2: Dashboard -->
+<div class="dashboard" id="dashboard"></div>
+
+<!-- Zone 3: Expandable Ranking Cards -->
+<div class="section">
+  <div class="section-title">All sectors ranked</div>
+  <div id="ranking-cards"></div>
+</div>
+
+<!-- Zone 4: Adjacency -->
+<div class="section">
+  <div class="section-title">Sector adjacency — expansion paths from beachhead</div>
+  <div id="adjacency"></div>
+</div>
+
+<!-- Zone 5: Shortlist + Prompts -->
+<div class="section">
+  <div class="section-title">Recommended shortlist + next steps</div>
+  <div id="shortlist"></div>
+</div>
+
+</div>
+
+<script>
+
+const WEIGHTS = [
+  { id: 'speed', label: 'Time to first client', short: 'Speed', val: 20 },
+  { id: 'revenue', label: 'Revenue ceiling (Y1–3)', short: 'Revenue', val: 15 },
+  { id: 'goldilocks', label: 'Goldilocks fit', short: 'Goldilocks', val: 15 },
+  { id: 'playbook', label: 'Playbook repeatability', short: 'Playbook', val: 15 },
+  { id: 'saas', label: 'SaaS / moat potential', short: 'Moat', val: 10 },
+  { id: 'spain', label: 'Spain client density', short: 'Spain', val: 10 },
+  { id: 'europe', label: 'Europe client density', short: 'EU', val: 10 },
+  { id: 'partner', label: 'Partnership model fit', short: 'Partner', val: 5 },
+];
+
+const SECTORS = [
+  {
+    id: 'hospitality',
+    name: 'Hospitality & F&B',
+    sub: 'independent + regional chains',
+    scores: { speed: 10, revenue: 7, goldilocks: 10, playbook: 10, saas: 8, spain: 10, europe: 8, partner: 7 },
+    goldilocks: { bigFirm: 'Yes — 58% independent, too fragmented for MBB', internal: 'No tech depth', growth: 'Steady ↑' },
+    saas: { playbook: 'High', saasProduct: 'RevPAR / labor SaaS', dataEffect: 'High — pricing benchmarks compound', networkEffect: 'Medium — supplier network possible' },
+    geo: { europe: 'High — post-COVID margin pressure', spain: 'Very high — world #2 tourism, $120.5B market', spainAdv: 'Home market, cultural fluency, 58% independent operator base', access: 'Direct — owner-operators, fast decisions' },
+    risks: ['Lower deal sizes vs. logistics', 'Seasonal cash flow at client level'],
+    insights: ['Fastest path to first revenue in Spain. Your proof base lives here.', '€4.2B hotel transactions in 2025. PE actively buying.'],
+  },
+  {
+    id: 'logistics',
+    name: 'Logistics / 3PL',
+    sub: 'mid-market operators',
+    scores: { speed: 4, revenue: 9, goldilocks: 8, playbook: 10, saas: 10, spain: 8, europe: 10, partner: 8 },
+    goldilocks: { bigFirm: 'Partial — Accenture/Deloitte active', internal: 'No bandwidth', growth: 'Strong ↑' },
+    saas: { playbook: 'High', saasProduct: 'Ops benchmarking SaaS', dataEffect: 'High — compounds per client', networkEffect: 'Medium — carrier network' },
+    geo: { europe: 'High — #1 PE sector by deal count 2024', spain: 'High — €72.6B market, 3.3% CAGR', spainAdv: 'EU/Africa/LATAM gateway, port + rail investment', access: 'Hard — need warm intro, dominated by large players' },
+    risks: ['Cold entry without existing logistics relationships', 'Large players (DSV, CEVA) dominate — mid-market layer thinner'],
+    insights: ['Best long-term SaaS thesis. Data compounds across clients.', 'Year 2–3 expansion via PE channel, not a day-one entry.'],
+  },
+  {
+    id: 'healthcare',
+    name: 'Healthcare / clinics',
+    sub: 'private clinics + dental groups',
+    scores: { speed: 6, revenue: 8, goldilocks: 9, playbook: 8, saas: 7, spain: 8, europe: 9, partner: 7 },
+    goldilocks: { bigFirm: 'Yes — too fragmented, regulatory complex', internal: 'No digital capability', growth: 'Strong ↑↑' },
+    saas: { playbook: 'High — clinic ops repeatable', saasProduct: 'Patient flow / scheduling SaaS', dataEffect: 'High — benchmarks compound', networkEffect: 'Medium — referral network' },
+    geo: { europe: 'High — PE acquiring fragmented clinics across Southern EU', spain: 'High — 20–30% of PE/VC deals are healthcare', spainAdv: 'Gov investing €70M in health data infrastructure, 19% digital CAGR', access: 'Moderate — clinic owners accessible, groups need intro' },
+    risks: ['Regulatory complexity (licensing, data privacy, GDPR+)', 'Requires healthcare-specific credibility to enter'],
+    insights: ['PE buying clinics at 6–8x, exiting at 12–15x. Ops improvement is the value creation lever.', 'Spain digital health growing at 19% CAGR — fastest segment.'],
+  },
+  {
+    id: 'retail',
+    name: 'Retail / e-commerce',
+    sub: 'mid-market chains + D2C brands',
+    scores: { speed: 7, revenue: 7, goldilocks: 7, playbook: 8, saas: 7, spain: 8, europe: 8, partner: 6 },
+    goldilocks: { bigFirm: 'Partial — MBB active in large retail', internal: 'Some digital teams exist', growth: 'Moderate ↑' },
+    saas: { playbook: 'High — inventory + omnichannel repeatable', saasProduct: 'Inventory / omnichannel ops SaaS', dataEffect: 'Medium — pricing + demand data', networkEffect: 'Low — competitive landscape' },
+    geo: { europe: 'High — omnichannel transition driving demand', spain: 'High — $322.8B market, 4% CAGR', spainAdv: '40M online buyers, regional chains adopting digital tools', access: 'Moderate — mix of owner-operated and PE-backed' },
+    risks: ['Internal digital teams already exist at larger chains', 'Margin pressure limits consulting budgets'],
+    insights: ['Omnichannel execution is now table stakes — laggards need help urgently.', 'Spain retail growing to $458B by 2034. Mid-market underserved.'],
+  },
+  {
+    id: 'manufacturing',
+    name: 'Manufacturing / industrial',
+    sub: 'mid-market SME producers',
+    scores: { speed: 5, revenue: 8, goldilocks: 8, playbook: 7, saas: 7, spain: 7, europe: 9, partner: 7 },
+    goldilocks: { bigFirm: 'Partial — Kearney/Accenture active in large mfg', internal: 'No digital bandwidth in SMEs', growth: 'Moderate ↑' },
+    saas: { playbook: 'Medium — process variation by industry', saasProduct: 'OEE / production analytics SaaS', dataEffect: 'Medium — factory-specific', networkEffect: 'Low — competitive data silos' },
+    geo: { europe: 'High — Industry 4.0 + green transition driving demand', spain: 'Moderate — 2.3% mfg growth, €300M gov digital advisory fund', spainAdv: 'Digital Advisory Bonuses €12–24K per SME from NextGen EU funds', access: 'Moderate — owner-operated SMEs accessible, larger firms gatekept' },
+    risks: ['Process variation by sub-industry limits playbook reuse', 'Longer sales cycles — capex-driven decisions'],
+    insights: ['€300M NextGen EU fund subsidizes digital consulting for SMEs — reduces buyer friction.', 'Industry 4.0 adoption in Spanish SMEs still early. First-mover window.'],
+  },
+  {
+    id: 'realestate',
+    name: 'Real estate / PropTech ops',
+    sub: 'developers + asset managers',
+    scores: { speed: 7, revenue: 6, goldilocks: 7, playbook: 5, saas: 5, spain: 9, europe: 6, partner: 5 },
+    goldilocks: { bigFirm: 'Yes — too implementation-heavy', internal: 'No cross-function capability', growth: 'Moderate ↑' },
+    saas: { playbook: 'Medium — asset-type dependent', saasProduct: 'Ops dashboard possible', dataEffect: 'Medium', networkEffect: 'Low — fragmented ownership' },
+    geo: { europe: 'Moderate — fragmented', spain: 'High — RE booming, Barcelona #2 EU IPO exchange', spainAdv: 'Major residential + commercial development cycle', access: 'Moderate — family + PE-owned mix' },
+    risks: ['Low moat potential', 'Asset-type variation limits playbook reuse'],
+    insights: ['Strong Spain-specific opportunity.', 'Natural adjacency from hospitality — hotels are real estate.'],
+  },
+];
+
+const NICHES = [
+  { id: 'none', name: 'Baseline', desc: 'Raw sector scores without tech niche overlay.', ceiling: '—', durability: '—', window: '—', mods: {} },
+  { id: 'erp', name: 'AI-native ERP', desc: 'Migrate from legacy systems to AI-native platforms. Strategic selection + change management.', ceiling: 'High', durability: 'Structural (5–10 yr+)', window: 'Opening now',
+    mods: { hospitality: { speed:+1, playbook:+1, saas:+1 }, logistics: { revenue:+1, playbook:+1, saas:+2 }, healthcare: { speed:+1, revenue:+1, playbook:+1, saas:+1 }, retail: { revenue:+1, playbook:+1, saas:+1 }, manufacturing: { revenue:+1, playbook:+1, saas:+1 }, realestate: { playbook:-1 } },
+  },
+  { id: 'postacq', name: 'Post-acq integration', desc: 'Consolidate tech stacks after bolt-on acquisitions. Structural PE demand.', ceiling: 'Moderate–high', durability: 'Permanent', window: 'Always open',
+    mods: { hospitality: { speed:-1 }, logistics: { revenue:+1, playbook:+1 }, healthcare: { speed:+1, revenue:+1, playbook:+1 }, retail: { revenue:+1, playbook:+1 }, manufacturing: { revenue:+1 }, realestate: {} },
+  },
+  { id: 'finops', name: 'Cloud / FinOps', desc: 'Cut 20–40% cloud spend. Immediate EBITDA impact. Fast proof, but commoditizing.', ceiling: 'Moderate', durability: 'Commoditizing (2–4 yr)', window: 'Peak now',
+    mods: { hospitality: { speed:+1, revenue:-1, playbook:+1 }, logistics: { speed:+1, playbook:+1 }, healthcare: { speed:+1, revenue:-1 }, retail: { speed:+1, revenue:-1 }, manufacturing: { speed:+1, revenue:-1 }, realestate: { speed:+1, revenue:-1 } },
+  },
+  { id: 'autoai', name: 'Automation + AI', desc: 'Automate workflows, embed AI — dynamic pricing, demand forecasting, labor scheduling.', ceiling: 'High', durability: 'Stable (automation endures, AI is the engine)', window: 'Open',
+    mods: { hospitality: { speed:+2, revenue:+1, playbook:+1, saas:+1 }, logistics: { speed:+1, revenue:+1, playbook:+1, saas:+1 }, healthcare: { speed:+1, revenue:+1, playbook:+1, saas:+1 }, retail: { speed:+1, revenue:+1, playbook:+1, saas:+1 }, manufacturing: { speed:+1, revenue:+1, playbook:+1 }, realestate: { revenue:-1, playbook:-1 } },
+  },
+  { id: 'cyber', name: 'Cybersecurity', desc: 'Risk mitigation, due diligence audits, regulatory compliance.', ceiling: 'Moderate', durability: 'Permanent (regulatory)', window: 'Always open',
+    mods: { hospitality: { speed:-1, revenue:-1 }, logistics: { speed:-1 }, healthcare: { revenue:+1, playbook:+1 }, retail: { speed:-1 }, manufacturing: { speed:-1 }, realestate: { speed:-1, revenue:-1, playbook:-1 } },
+  },
+];
+
+const CHANNELS = [
+  { id: 'direct', name: 'Direct', desc: 'Sell directly to owner-operators. Fastest in fragmented sectors.', mods: {} },
+  { id: 'pe', name: 'PE-intermediated', desc: '1 GP = 5–15 portcos. Best pipeline multiplier. 725 deals in Spain 2024.',
+    mods: { hospitality: { revenue:+2, goldilocks:+1 }, logistics: { speed:+2, revenue:+1, playbook:+1, goldilocks:+1, partner:+1 }, healthcare: { speed:+2, revenue:+1, playbook:+1, goldilocks:+1 }, retail: { speed:+1, revenue:+1, goldilocks:+1 }, manufacturing: { speed:+1, revenue:+1, goldilocks:+1 }, realestate: { speed:+1, revenue:+1, goldilocks:+1 } },
+  },
+  { id: 'partner', name: 'Partner / Avengers', desc: 'Assemble independent operators. US firms expanding EU, consortium sell.',
+    mods: { hospitality: { partner:+1, speed:-1 }, logistics: { partner:+2, europe:+1, revenue:+1 }, healthcare: { partner:+2, europe:+1 }, retail: { partner:+1, europe:+1 }, manufacturing: { partner:+2, europe:+1, revenue:+1 }, realestate: { partner:+1 } },
+  },
+];
+
+let selectedNiche = 'none';
+let selectedChannel = 'direct';
+let weights = {};
+let expandedCards = {};
+WEIGHTS.forEach(w => weights[w.id] = w.val);
+
+function getModifiedScore(sector, dimId) {
+  let val = sector.scores[dimId] || 0;
+  const niche = NICHES.find(n => n.id === selectedNiche);
+  if (niche && niche.mods[sector.id]) val += (niche.mods[sector.id][dimId] || 0);
+  const chan = CHANNELS.find(c => c.id === selectedChannel);
+  if (chan && chan.mods[sector.id]) val += (chan.mods[sector.id][dimId] || 0);
+  return Math.max(1, Math.min(10, val));
+}
+
+function getWeightedScore(sector) {
+  const totalW = Object.values(weights).reduce((a,b) => a+b, 0);
+  if (totalW === 0) return 0;
+  let score = 0;
+  WEIGHTS.forEach(w => { score += getModifiedScore(sector, w.id) * (weights[w.id] / totalW); });
+  return Math.round(score * 10) / 10;
+}
+
+function pillClass(v) { return v >= 8 ? 'pill-g' : v >= 6 ? 'pill-a' : 'pill-r'; }
+function pillLabel(v) { return v >= 8 ? 'High' : v >= 6 ? 'Med' : 'Low'; }
+function barColor(i) { return i === 0 ? '#1D9E75' : i === 1 ? '#378ADD' : '#a0a09a'; }
+
+/* ── Render filter pills ── */
+function renderFilters() {
+  const np = document.getElementById('niche-pills');
+  np.innerHTML = NICHES.map(n =>
+    `<button class="filter-pill ${selectedNiche === n.id ? 'active' : ''}" data-niche="${n.id}">${n.name}</button>`
+  ).join('');
+  np.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => { selectedNiche = btn.dataset.niche; renderFilters(); renderAll(); });
+  });
+
+  const cp = document.getElementById('channel-pills');
+  cp.innerHTML = CHANNELS.map(c =>
+    `<button class="filter-pill ${selectedChannel === c.id ? 'active' : ''}" data-channel="${c.id}">${c.name}</button>`
+  ).join('');
+  cp.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => { selectedChannel = btn.dataset.channel; renderFilters(); renderAll(); });
+  });
+
+  // Brief
+  const n = NICHES.find(x => x.id === selectedNiche);
+  const c = CHANNELS.find(x => x.id === selectedChannel);
+  const ranked = getRanked();
+  const top = ranked[0];
+  let briefHtml = '';
+  if (n && n.id !== 'none') {
+    briefHtml += `<div class="filter-brief"><strong>${n.name}</strong> — ${n.desc} Ceiling: ${n.ceiling}. Durability: ${n.durability}.</div>`;
+  }
+  briefHtml += `<div class="filter-brief" style="margin-top:0.35rem;"><strong>Result:</strong> ${n && n.id !== 'none' ? n.name : 'Baseline'} × ${c.name} → <strong>${top.name}</strong> ranks #1 (${getWeightedScore(top).toFixed(1)})</div>`;
+  document.getElementById('filter-brief').innerHTML = briefHtml;
+}
+
+/* ── Advanced weights ── */
+function renderWeights() {
+  const totalW = Object.values(weights).reduce((a,b) => a+b, 0);
+  document.getElementById('total-weight').textContent = totalW + '%';
+  const el = document.getElementById('weight-controls');
+  el.innerHTML = WEIGHTS.map(w => `
+    <div class="weight-row">
+      <span class="weight-label">${w.label}</span>
+      <input type="range" min="0" max="40" step="1" value="${weights[w.id]}" data-id="${w.id}">
+      <span class="weight-val" id="wv-${w.id}">${weights[w.id]}</span>
+      <span class="weight-pct" id="wp-${w.id}">${totalW > 0 ? Math.round(weights[w.id]/totalW*100) : 0}%</span>
+    </div>
+  `).join('');
+  el.querySelectorAll('input[type=range]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      weights[e.target.dataset.id] = parseInt(e.target.value);
+      renderAll();
+    });
+  });
+}
+
+function getRanked() {
+  return [...SECTORS].sort((a,b) => getWeightedScore(b) - getWeightedScore(a));
+}
+
+/* ── Dashboard ── */
+function renderDashboard() {
+  const ranked = getRanked();
+  const top = ranked[0];
+  const maxScore = getWeightedScore(top) || 1;
+  const bars = ranked.map((s, i) => {
+    const score = getWeightedScore(s);
+    const pct = Math.round(score / 10 * 100);
+    return `<div class="dash-bar-row">
+      <span class="dash-bar-label">${s.name}</span>
+      <div class="dash-bar-wrap"><div class="dash-bar" style="width:${pct}%;background:${barColor(i)};"></div></div>
+      <span class="dash-bar-score">${score.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dashboard').innerHTML = `
+    <div class="dash-winner">
+      <span class="dash-rank">#1</span>
+      <div>
+        <div class="dash-name">${top.name}</div>
+        <div class="dash-sub">${top.sub}</div>
+      </div>
+      <span class="dash-score">${getWeightedScore(top).toFixed(1)}</span>
+    </div>
+    <div class="dash-bars">${bars}</div>
+  `;
+}
+
+/* ── Expandable ranking cards ── */
+function renderRanking() {
+  const ranked = getRanked();
+  document.getElementById('ranking-cards').innerHTML = ranked.map((s, i) => {
+    const score = getWeightedScore(s);
+    const isOpen = expandedCards[s.id] || false;
+    const pills = WEIGHTS.map(w => {
+      const v = getModifiedScore(s, w.id);
+      return `<span class="pill tip ${pillClass(v)}" data-tip="${w.label}">${v}</span>`;
+    }).join('');
+
+    // Matrix detail row
+    const matrixRow = WEIGHTS.map(w => {
+      const v = getModifiedScore(s, w.id);
+      const pct = v * 10;
+      return `<div class="matrix-item">
+        <div class="matrix-score-bar"><div class="matrix-score-fill" style="width:${pct}%;background:${v >= 8 ? '#1D9E75' : v >= 6 ? '#d4a843' : '#c75c4b'};"></div></div>
+        <span class="pill tip ${pillClass(v)}" data-tip="${w.label}" style="font-size:0.65rem;padding:0.1rem 0.35rem;">${v}</span>
+        <div class="matrix-dim">${w.short}</div>
+      </div>`;
+    }).join('');
+
+    // Goldilocks
+    const gl = s.goldilocks;
+    const goldilocksHtml = `
+      <div class="detail-section-title">Goldilocks fit</div>
+      <div class="detail-grid">
+        <div class="mini-card"><div class="mini-label">Big firm ignores?</div><div class="mini-val">${gl.bigFirm}</div></div>
+        <div class="mini-card"><div class="mini-label">Internal team can't?</div><div class="mini-val">${gl.internal}</div></div>
+        <div class="mini-card"><div class="mini-label">Boutique growth</div><div class="mini-val">${gl.growth}</div></div>
+      </div>`;
+
+    // SaaS / Moat
+    const ss = s.saas;
+    const saasHtml = `
+      <div class="detail-section-title">SaaS / Moat potential</div>
+      <div class="detail-grid">
+        <div class="mini-card"><div class="mini-label">Playbook</div><div class="mini-val">${ss.playbook}</div></div>
+        <div class="mini-card"><div class="mini-label">SaaS product</div><div class="mini-val">${ss.saasProduct}</div></div>
+        <div class="mini-card"><div class="mini-label">Data network effect</div><div class="mini-val">${ss.dataEffect}</div></div>
+        <div class="mini-card"><div class="mini-label">Network / marketplace</div><div class="mini-val">${ss.networkEffect}</div></div>
+      </div>`;
+
+    // Geo
+    const g = s.geo;
+    const geoHtml = `
+      <div class="detail-section-title">Geographic overlay</div>
+      <div class="detail-grid">
+        <div class="mini-card"><div class="mini-label">EU client density</div><div class="mini-val">${g.europe}</div></div>
+        <div class="mini-card"><div class="mini-label">Spain market</div><div class="mini-val">${g.spain}</div></div>
+        <div class="mini-card"><div class="mini-label">Spain advantage</div><div class="mini-val">${g.spainAdv}</div></div>
+        <div class="mini-card"><div class="mini-label">Decision maker access</div><div class="mini-val">${g.access}</div></div>
+      </div>`;
+
+    // Insights + risks
+    const insightsHtml = s.insights.map(x => `<div class="insight-box">${x}</div>`).join('');
+    const risksHtml = s.risks.map(x => `<div class="risk-box">Risk: ${x}</div>`).join('');
+
+    return `
+      <div class="rank-card ${i===0?'winner':''}" data-sector="${s.id}">
+        <div class="rank-header" onclick="toggleCard('${s.id}')">
+          <span class="rank-badge">#${i+1}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="sector-name">${s.name}</div>
+            <div class="sector-sub">${s.sub}</div>
+          </div>
+          <div class="rank-pills">${pills}</div>
+          <span class="score-num">${score.toFixed(1)}</span>
+          <span class="expand-arrow ${isOpen?'open':''}">▶</span>
+        </div>
+        <div class="rank-body ${isOpen?'open':''}">
+          <div class="rank-content">
+            <div class="matrix-row">${matrixRow}</div>
+            ${goldilocksHtml}
+            ${saasHtml}
+            ${geoHtml}
+            <div class="detail-section-title">Key insights</div>
+            ${insightsHtml}
+            <div class="detail-section-title">Risks</div>
+            ${risksHtml}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleCard(sectorId) {
+  expandedCards[sectorId] = !expandedCards[sectorId];
+  renderRanking();
+}
+
+/* ── Adjacency ── */
+const ADJACENCIES = [
+  { to: 'realestate', toLabel: 'Real estate / PropTech', friction: 'low', frictionLabel: 'Low friction', timeline: 'Year 1–2', tier: 't1',
+    bridge: 'Hotels are real estate. RevPAR → asset management. Same PE fund, same GP conversation.', mechanism: 'Lateral sell within existing GP relationship' },
+  { to: 'healthcare', toLabel: 'Healthcare / clinics', friction: 'med', frictionLabel: 'Medium friction', timeline: 'Year 1–2', tier: 't2',
+    bridge: 'Same PE playbook: buy fragmented independents at 6–8x, integrate ops, exit at 12–15x. Patient flow ≈ guest flow.', mechanism: 'GP with both hospitality and clinic portcos in same fund' },
+  { to: 'logistics', toLabel: 'Logistics / 3PL', friction: 'med', frictionLabel: 'Medium friction', timeline: 'Year 2–3', tier: 't2',
+    bridge: 'Labor-intensive, multi-location, margin-sensitive ops. Hospitality supply chain work is credible proof.', mechanism: 'GP referral to logistics portco + highest SaaS/moat ceiling' },
+  { to: 'retail', toLabel: 'Retail / e-commerce', friction: 'med', frictionLabel: 'Medium friction', timeline: 'Year 2–3', tier: 't2',
+    bridge: 'Omnichannel ops, inventory management, multi-location scheduling. Hospitality ops skills transfer cleanly.', mechanism: 'PE channel or direct — mid-market chains need the same operational lift' },
+  { to: 'manufacturing', toLabel: 'Manufacturing / industrial', friction: 'high', frictionLabel: 'High friction', timeline: 'Year 3+', tier: 't3',
+    bridge: 'Process variation by sub-industry limits playbook reuse. EU funds reduce buyer friction but sales cycles are longer.', mechanism: 'Requires manufacturing-specific credibility. Best entered via PE referral.' },
+];
+
+function renderAdjacency() {
+  const ranked = getRanked();
+  const top = ranked[0];
+  const chanLabel = CHANNELS.find(c => c.id === selectedChannel)?.name || 'Direct';
+
+  const beachhead = `
+    <div class="adj-card" style="border:2px solid #1D9E75;">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <span class="adj-node core">${top.name}</span>
+        <span class="pill pill-b" style="font-size:0.68rem;">via ${chanLabel}</span>
+        <span class="adj-timeline">Month 1 entry</span>
+      </div>
+      <div class="adj-detail" style="margin-top:0.4rem;">Current #1 sector. Beachhead for expansion.</div>
+    </div>`;
+
+  const paths = ADJACENCIES.map(a => `
+    <div class="adj-card">
+      <div class="adj-row">
+        <span class="adj-node core" style="font-size:0.7rem;padding:0.25rem 0.45rem;">Beachhead</span>
+        <span class="adj-arrow">→</span>
+        <span class="adj-node ${a.tier}">${a.toLabel}</span>
+        <span class="adj-friction ${a.friction}">${a.frictionLabel}</span>
+        <span class="adj-timeline">${a.timeline}</span>
+      </div>
+      <div class="adj-detail" style="margin-top:0.35rem;"><strong style="color:#1a1a1a;">Bridge:</strong> ${a.bridge}</div>
+      <div class="adj-detail"><strong style="color:#1a1a1a;">Mechanism:</strong> ${a.mechanism}</div>
+    </div>
+  `).join('');
+
+  const principle = `
+    <div class="insight-box" style="margin-top:0.5rem;">
+      <strong>Munger principle:</strong> Each expansion should be <em>pulled</em> by an existing client relationship, not <em>pushed</em> by ambition. The GP who saw you transform their hotel chain asks you to look at their logistics asset — that's the natural motion.
+    </div>`;
+
+  document.getElementById('adjacency').innerHTML = beachhead + paths + principle;
+}
+
+/* ── Shortlist ── */
+function renderShortlist() {
+  const ranked = getRanked();
+  const top3 = ranked.slice(0,3);
+
+  const cards = top3.map((s, i) => `
+    <div class="shortlist-card ${i===0?'winner':''}">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.5rem;">
+        <span class="rec-num">#${i+1}</span>
+        <div>
+          <div class="sector-name">${s.name}</div>
+          <div class="sector-sub" style="font-size:0.75rem;">${s.sub} — score ${getWeightedScore(s).toFixed(1)}</div>
+        </div>
+      </div>
+      ${s.insights.map(x => `<div class="insight-box">${x}</div>`).join('')}
+      ${s.risks.map(r => `<div class="risk-box">Risk: ${r}</div>`).join('')}
+      <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.5rem;">
+        <span class="pill pill-b">Spain ${pillLabel(getModifiedScore(s,'spain'))}</span>
+        <span class="pill pill-b">EU ${pillLabel(getModifiedScore(s,'europe'))}</span>
+        <span class="pill ${pillClass(getModifiedScore(s,'saas'))}">Moat ${pillLabel(getModifiedScore(s,'saas'))}</span>
+        <span class="pill ${pillClass(getModifiedScore(s,'playbook'))}">Playbook ${pillLabel(getModifiedScore(s,'playbook'))}</span>
+        <span class="pill ${pillClass(getModifiedScore(s,'speed'))}">Speed ${pillLabel(getModifiedScore(s,'speed'))}</span>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('shortlist').innerHTML = cards;
+}
+
+/* ── Render all ── */
+function renderAll() {
+  const totalW = Object.values(weights).reduce((a,b) => a+b, 0);
+  document.getElementById('total-weight').textContent = totalW + '%';
+  WEIGHTS.forEach(w => {
+    const vEl = document.getElementById('wv-' + w.id);
+    const pEl = document.getElementById('wp-' + w.id);
+    if (vEl) vEl.textContent = weights[w.id];
+    if (pEl) pEl.textContent = totalW > 0 ? Math.round(weights[w.id]/totalW*100) + '%' : '0%';
+  });
+  renderDashboard();
+  renderRanking();
+  renderAdjacency();
+  renderShortlist();
+  renderFilters();
+}
+
+/* ── Advanced toggle ── */
+document.getElementById('adv-toggle-btn').addEventListener('click', () => {
+  const panel = document.getElementById('adv-panel');
+  const arrow = document.getElementById('adv-arrow');
+  panel.classList.toggle('open');
+  arrow.classList.toggle('open');
+});
+
+/* ── Init ── */
+renderFilters();
+renderWeights();
+renderAll();
+</script>
